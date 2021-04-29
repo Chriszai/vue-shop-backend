@@ -16,6 +16,6 @@ module.exports = {
     'space-before-function-paren':0,
     'comma-dangle':0,
     'quote-props':0,
-    'object-curly-newline':0
+    "camelcase": [1, {"properties": "never"}],
   }
 }

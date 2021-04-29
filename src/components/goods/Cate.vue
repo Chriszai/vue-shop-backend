@@ -48,11 +48,19 @@
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
         <!-- 操作 -->
-        <template slot="opt">
-          <el-button type="primary" icon="el-icon-edit" size="mini"
+        <template slot="opt" slot-scope="scope">
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
+            size="mini"
+            @click="showEditDialog(scope.row)"
             >编辑</el-button
           >
-          <el-button type="danger" icon="el-icon-delete" size="mini"
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            size="mini"
+            @click="removeCateById(scope.row)"
             >删除</el-button
           >
         </template>
@@ -95,6 +103,7 @@
             v-model="selectedKeys"
             @change="parentCateChanged"
             :clearable="true"
+            change-on-select
           ></el-cascader>
         </el-form-item>
       </el-form>
@@ -255,6 +264,39 @@ export default {
       this.selectedKeys = []
       this.addCateForm.cat_level = 0
       this.addCateForm.cat_pid = 0
+    },
+    // 展示编辑分类的对话框
+    async showEditDialog(cate) {
+      this.cateId = cate.cat_id
+      const { data: res } = await this.$http.get('categories/' + cate.cat_id)
+      console.log(res)
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取数据失败')
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    // 根据id删除对应的商品分类信息
+    async removeCateById(cate) {
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该商品分类, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      ).catch((err) => err)
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消该操作')
+      }
+      const { data: res } = await this.$http.delete('categories/' + cate.cat_id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除商品分类失败')
+      }
+      this.$message.success('删除商品分类成功')
+      this.getCateList()
+      this.editDialogVisible = false
     },
   },
 }
